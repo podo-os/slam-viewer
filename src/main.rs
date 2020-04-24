@@ -26,6 +26,7 @@ impl slam_cv::Feature for MyFeature {
     }
 }
 
+// TODO: move to samples
 fn main() {
     let options = opt::Options::default();
 
