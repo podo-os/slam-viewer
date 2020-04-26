@@ -1,7 +1,7 @@
 use kiss3d::light::Light;
 use kiss3d::window::Window;
 use nalgebra::Point3;
-use slam_cv::{Colors, Feature, World};
+use slam_cv::{Colors, Landmark, World};
 
 pub struct Options {
     pub title: String,
@@ -26,14 +26,14 @@ impl Default for Options {
 impl Options {
     pub fn spawn_window<F, W>(self, world: W)
     where
-        F: 'static + Feature<Number = f32>,
+        F: 'static + Landmark<Number = f32>,
         W: World<Feature = F>,
     {
         let point_color = self.point_color;
         let mut window = self.make_window();
 
         while window.render() {
-            world.for_features(|f| {
+            world.for_landmarks(|f| {
                 let p = f.point_world();
                 window.draw_point(&p, &point_color);
             });

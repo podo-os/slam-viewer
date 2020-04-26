@@ -4,6 +4,17 @@ version = "0.1.0"
 authors = ["h <besqer996@gnu.ac.kr>"]
 edition = "2018"
 
+autoexamples = true
+
+include = [
+    "src/**/*.rs",
+    "examples/**/*.rs",
+    "examples/Cargo.toml",
+    "Cargo.toml",
+    "LICENSE",
+    "README.md"
+]
+
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
