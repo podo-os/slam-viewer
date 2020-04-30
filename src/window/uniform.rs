@@ -1,6 +1,6 @@
 use core::fmt::Debug;
 
-use crate::camera::Camera;
+use super::camera::Camera;
 
 use nalgebra::Matrix4;
 use slam_cv::Number;
@@ -29,8 +29,8 @@ impl<N> Uniforms<N>
 where
     N: 'static + Number,
 {
-    pub fn update_view_proj(&mut self, camera: &Camera<N>) {
-        self.view_proj = camera.build_view_projection_matrix();
+    pub fn update_view_proj(&mut self, camera: &Camera<N>, aspect: N) {
+        self.view_proj = camera.build_view_projection_matrix(aspect);
     }
 }
 

@@ -1,8 +1,6 @@
-mod camera;
 mod engine;
-mod opt;
-mod point;
-mod uniform;
+mod pipes;
+mod viewer;
 mod window;
 
-pub use opt::Options;
+pub use viewer::Viewer;

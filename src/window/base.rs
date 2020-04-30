@@ -1,6 +1,8 @@
 use super::builder::WindowBuilder;
-use crate::point::{Point, PointFormat};
-use crate::uniform::Uniforms;
+use super::camera::{Camera, CameraController};
+use super::event::WindowEventState;
+use super::uniform::Uniforms;
+use crate::pipes::{PipelineRenderer, VertexFormat};
 
 use nalgebra::Point3;
 use slam_cv::Number;
@@ -9,7 +11,7 @@ use winit::{event::*, window};
 pub struct Window<N>
 where
     N: 'static + Number,
-    Point3<N>: PointFormat<N>,
+    Point3<N>: VertexFormat<N>,
 {
     pub window: window::Window,
     surface: wgpu::Surface,
@@ -18,9 +20,11 @@ where
     sc_desc: wgpu::SwapChainDescriptor,
     swap_chain: wgpu::SwapChain,
 
-    builder: WindowBuilder<N>,
+    pipeline_rendener: Box<dyn PipelineRenderer>,
 
-    render_pipeline: wgpu::RenderPipeline,
+    // TODO move camera to ShaderPlugin
+    camera: Camera<N>,
+    camera_controller: CameraController<N>,
 
     uniforms: Uniforms<N>,
     uniform_buffer: wgpu::Buffer,
@@ -30,7 +34,7 @@ where
 impl<N> Window<N>
 where
     N: 'static + Number,
-    Point3<N>: PointFormat<N>,
+    Point3<N>: VertexFormat<N>,
 {
     pub async fn new(window: window::Window, builder: WindowBuilder<N>) -> Self {
         let size = window.inner_size();
@@ -67,7 +71,7 @@ where
         let swap_chain = device.create_swap_chain(&surface, &sc_desc);
 
         let mut uniforms = Uniforms::default();
-        uniforms.update_view_proj(&builder.camera);
+        uniforms.update_view_proj(&builder.camera, Self::aspect(&sc_desc));
 
         let uniform_buffer = device.create_buffer_with_data(
             bytemuck::cast_slice(&[uniforms]),
@@ -97,44 +101,13 @@ where
             label: Some("uniform_bind_group"),
         });
 
-        let render_pipeline_layout =
-            device.create_pipeline_layout(&wgpu::PipelineLayoutDescriptor {
-                bind_group_layouts: &[&uniform_bind_group_layout],
-            });
+        let pipeline_rendener =
+            builder
+                .pipeline_builder
+                .build(&device, sc_desc.format, &uniform_bind_group_layout);
 
-        let render_pipeline = device.create_render_pipeline(&wgpu::RenderPipelineDescriptor {
-            layout: &render_pipeline_layout,
-            vertex_stage: wgpu::ProgrammableStageDescriptor {
-                module: &vs_module,
-                entry_point: "main",
-            },
-            fragment_stage: Some(wgpu::ProgrammableStageDescriptor {
-                module: &fs_module,
-                entry_point: "main",
-            }),
-            rasterization_state: Some(wgpu::RasterizationStateDescriptor {
-                front_face: wgpu::FrontFace::Ccw,
-                cull_mode: wgpu::CullMode::Back,
-                depth_bias: 0,
-                depth_bias_slope_scale: 0.0,
-                depth_bias_clamp: 0.0,
-            }),
-            color_states: &[wgpu::ColorStateDescriptor {
-                format: sc_desc.format,
-                color_blend: wgpu::BlendDescriptor::REPLACE,
-                alpha_blend: wgpu::BlendDescriptor::REPLACE,
-                write_mask: wgpu::ColorWrite::ALL,
-            }],
-            primitive_topology: wgpu::PrimitiveTopology::TriangleList,
-            depth_stencil_state: None,
-            vertex_state: wgpu::VertexStateDescriptor {
-                index_format: wgpu::IndexFormat::Uint16,
-                vertex_buffers: &[Point::desc()],
-            },
-            sample_count: 1,
-            sample_mask: !0,
-            alpha_to_coverage_enabled: false,
-        });
+        let camera = builder.camera;
+        let camera_controller = builder.camera_controller;
 
         Self {
             window,
@@ -144,9 +117,10 @@ where
             sc_desc,
             swap_chain,
 
-            builder,
+            pipeline_rendener,
 
-            render_pipeline,
+            camera,
+            camera_controller,
 
             uniforms,
             uniform_buffer,
@@ -160,15 +134,17 @@ where
         self.swap_chain = self.device.create_swap_chain(&self.surface, &self.sc_desc);
     }
 
-    pub fn input(&mut self, event: &WindowEvent) -> bool {
-        false
+    pub fn input(&mut self, event: &WindowEvent) -> WindowEventState {
+        match event {
+            WindowEvent::KeyboardInput { .. } => self.camera_controller.process_events(event),
+            _ => WindowEventState::Unused,
+        }
     }
 
     pub fn update(&mut self) {
-        self.builder
-            .camera_controller
-            .update_camera(&mut self.builder.camera);
-        self.uniforms.update_view_proj(&self.builder.camera);
+        self.camera_controller.update_camera(&mut self.camera);
+        self.uniforms
+            .update_view_proj(&self.camera, Self::aspect(&self.sc_desc));
 
         let mut encoder = self
             .device
@@ -217,12 +193,15 @@ where
                 depth_stencil_attachment: None,
             });
 
-            render_pass.set_pipeline(&self.render_pipeline);
             render_pass.set_bind_group(0, &self.uniform_bind_group, &[]);
-            render_pass.set_vertex_buffer(0, &self.vertex_buffer, 0, 0);
-            render_pass.draw(0..self.num_indices, 0..1);
+            self.pipeline_rendener
+                .render(&self.device, &mut render_pass);
         }
 
         self.queue.submit(&[encoder.finish()]);
+    }
+
+    fn aspect(sc_desc: &wgpu::SwapChainDescriptor) -> N {
+        N::from(sc_desc.width).unwrap() / N::from(sc_desc.height).unwrap()
     }
 }

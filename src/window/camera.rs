@@ -1,3 +1,5 @@
+use super::event::WindowEventState;
+
 use nalgebra::{Matrix4, Point3, Vector3};
 use slam_cv::Number;
 use winit::event::*;
@@ -10,7 +12,6 @@ where
     pub eye: Point3<N>,
     pub target: Point3<N>,
     pub up: Vector3<N>,
-    pub aspect: N,
     pub fovy: N,
     pub znear: N,
     pub zfar: N,
@@ -20,10 +21,10 @@ impl<N> Camera<N>
 where
     N: 'static + Number,
 {
-    pub fn build_view_projection_matrix(&self) -> Matrix4<N> {
+    pub fn build_view_projection_matrix(&self, aspect: N) -> Matrix4<N> {
         let view = Matrix4::look_at_rh(&self.eye, &self.target, &self.up);
 
-        let proj = Matrix4::new_perspective(self.aspect, self.fovy, self.znear, self.zfar);
+        let proj = Matrix4::new_perspective(aspect, self.fovy, self.znear, self.zfar);
 
         proj * view
     }
@@ -58,7 +59,7 @@ where
         }
     }
 
-    pub fn process_events(&mut self, event: &WindowEvent) -> bool {
+    pub fn process_events(&mut self, event: &WindowEvent) -> WindowEventState {
         match event {
             WindowEvent::KeyboardInput {
                 input:
@@ -73,32 +74,32 @@ where
                 match keycode {
                     VirtualKeyCode::Space => {
                         self.is_up_pressed = is_pressed;
-                        true
+                        WindowEventState::Consumed
                     }
                     VirtualKeyCode::LShift => {
                         self.is_down_pressed = is_pressed;
-                        true
+                        WindowEventState::Consumed
                     }
                     VirtualKeyCode::W | VirtualKeyCode::Up => {
                         self.is_forward_pressed = is_pressed;
-                        true
+                        WindowEventState::Consumed
                     }
                     VirtualKeyCode::A | VirtualKeyCode::Left => {
                         self.is_left_pressed = is_pressed;
-                        true
+                        WindowEventState::Consumed
                     }
                     VirtualKeyCode::S | VirtualKeyCode::Down => {
                         self.is_backward_pressed = is_pressed;
-                        true
+                        WindowEventState::Consumed
                     }
                     VirtualKeyCode::D | VirtualKeyCode::Right => {
                         self.is_right_pressed = is_pressed;
-                        true
+                        WindowEventState::Consumed
                     }
-                    _ => false,
+                    _ => WindowEventState::Unused,
                 }
             }
-            _ => false,
+            _ => WindowEventState::Unused,
         }
     }
 

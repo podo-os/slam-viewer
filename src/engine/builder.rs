@@ -1,7 +1,7 @@
 use std::collections::HashMap;
 
-use crate::point::PointFormat;
-use crate::window::{Window, WindowBuilder};
+use crate::pipes::VertexFormat;
+use crate::window::{WindowBuilder, WindowEventState};
 
 use futures::executor::block_on;
 use nalgebra::Point3;
@@ -9,13 +9,12 @@ use slam_cv::Number;
 use winit::{
     event::*,
     event_loop::{ControlFlow, EventLoop},
-    window,
 };
 
 pub struct EngineBuilder<N>
 where
     N: 'static + Number,
-    Point3<N>: PointFormat<N>,
+    Point3<N>: VertexFormat<N>,
 {
     pub windows: Vec<WindowBuilder<N>>,
 }
@@ -23,12 +22,12 @@ where
 impl<N> EngineBuilder<N>
 where
     N: 'static + Number,
-    Point3<N>: PointFormat<N>,
+    Point3<N>: VertexFormat<N>,
 {
     pub fn run(self) -> ! {
         let event_loop = EventLoop::new();
 
-        let windows = self
+        let mut windows = self
             .windows
             .into_iter()
             .map(|builder| block_on(builder.build(&event_loop)))
@@ -40,8 +39,8 @@ where
                     ref event,
                     window_id,
                 } => {
-                    if let Some(window) = windows.get(&window_id) {
-                        if !window.input(event) {
+                    if let Some(window) = windows.get_mut(&window_id) {
+                        if window.input(event) == WindowEventState::Unused {
                             match event {
                                 WindowEvent::CloseRequested => *control_flow = ControlFlow::Exit,
                                 WindowEvent::KeyboardInput { input, .. } => match input {
@@ -65,7 +64,7 @@ where
                     }
                 }
                 Event::RedrawRequested(window_id) => {
-                    if let Some(window) = windows.get(&window_id) {
+                    if let Some(window) = windows.get_mut(&window_id) {
                         window.update();
                         window.render();
                     }
