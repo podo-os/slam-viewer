@@ -21,7 +21,7 @@ impl<N> Camera<N>
 where
     N: 'static + Number,
 {
-    pub fn build_view_projection_matrix(&self, aspect: N) -> Matrix4<N> {
+    pub(super) fn build_view_projection_matrix(&self, aspect: N) -> Matrix4<N> {
         let view = Matrix4::look_at_rh(&self.eye, &self.target, &self.up);
 
         let proj = Matrix4::new_perspective(aspect, self.fovy, self.znear, self.zfar);
@@ -59,7 +59,7 @@ where
         }
     }
 
-    pub fn process_events(&mut self, event: &WindowEvent) -> WindowEventState {
+    pub(super) fn process_events(&mut self, event: &WindowEvent) -> WindowEventState {
         match event {
             WindowEvent::KeyboardInput {
                 input:
@@ -103,7 +103,7 @@ where
         }
     }
 
-    pub fn update_camera(&self, camera: &mut Camera<N>) {
+    pub(super) fn update_camera(&self, camera: &mut Camera<N>) {
         let forward = (camera.target - camera.eye).normalize();
 
         if self.is_forward_pressed {
