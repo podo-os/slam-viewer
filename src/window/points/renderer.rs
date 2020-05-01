@@ -53,9 +53,5 @@ where
         render_pass.set_pipeline(&self.render_pipeline);
         render_pass.set_vertex_buffer(0, &self.vertex_buffer, 0, 0);
         render_pass.draw(0..num_points, 0..1);
-
-        render_pass.set_pipeline(&self.render_pipeline);
-        render_pass.set_vertex_buffer(0, &self.vertex_buffer, 0, 0);
-        render_pass.draw(0..num_points, 0..1);
     }
 }
