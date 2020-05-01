@@ -31,7 +31,7 @@ futures = "0.3"
 glsl-to-spirv = "0.1"
 image = "0.23"
 nalgebra = "0.21"
-slam-cv = { path = "../cv" }
+slam-cv = "0.1"
 wgpu = "0.5"
 winit = "0.22"
 
