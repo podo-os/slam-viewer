@@ -1,6 +1,6 @@
 use core::mem;
 
-use crate::pipes::VertexFormat;
+use crate::pipes::{GpuVertex, VertexFormat};
 
 use nalgebra::Point3;
 use slam_cv::Number;
@@ -57,6 +57,16 @@ where
             step_mode: wgpu::InputStepMode::Vertex,
             attributes,
         }
+    }
+}
+
+impl<N> GpuVertex for Point<N>
+where
+    N: 'static + Number,
+    Point3<N>: VertexFormat<N>,
+{
+    fn weight() -> u64 {
+        1
     }
 }
 

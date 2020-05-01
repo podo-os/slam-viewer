@@ -12,3 +12,7 @@ impl VertexFormat<f32> for nalgebra::Point3<f32> {
         wgpu::VertexFormat::Float3
     }
 }
+
+pub trait GpuVertex {
+    fn weight() -> u64;
+}

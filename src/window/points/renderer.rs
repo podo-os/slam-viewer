@@ -1,8 +1,9 @@
 use core::marker::PhantomData;
 
 use super::builder::PointsBuilder;
+use super::point::Point;
 use super::source::PointSource;
-use crate::pipes::{PipelineBuilder, PipelineRenderer, VertexFormat};
+use crate::pipes::{GpuVec, PipelineBuilder, PipelineRenderer, VertexFormat};
 
 use nalgebra::Point3;
 use slam_cv::Number;
@@ -14,7 +15,7 @@ where
     S: 'static + PointSource<N>,
 {
     pub render_pipeline: wgpu::RenderPipeline,
-    pub vertex_buffer: wgpu::Buffer,
+    pub buffer: GpuVec<Point<N>>,
 
     pub number: PhantomData<N>,
     pub source: S,
@@ -43,15 +44,11 @@ where
     S: PointSource<N>,
 {
     fn render<'a>(&'a mut self, device: &wgpu::Device, render_pass: &mut wgpu::RenderPass<'a>) {
-        let points = self.source.collect_visual_points();
-        let num_points = points.len() as u32;
-
-        // TODO: more efficient buffer
-        self.vertex_buffer = device
-            .create_buffer_with_data(bytemuck::cast_slice(&points), wgpu::BufferUsage::VERTEX);
-
         render_pass.set_pipeline(&self.render_pipeline);
-        render_pass.set_vertex_buffer(0, &self.vertex_buffer, 0, 0);
-        render_pass.draw(0..num_points, 0..1);
+
+        let points = self.source.collect_visual_points();
+
+        self.buffer.update(device, points);
+        self.buffer.set_buffer(render_pass);
     }
 }

@@ -55,7 +55,7 @@ impl slam_cv::feature::Landmark for MyFeature {
 }
 
 fn main() {
-    const NUM_POINTS: usize = 200;
+    const NUM_POINTS: usize = 10_000;
 
     let mut rng = rand::thread_rng();
     let mut rng = StandardNormal.sample_iter(&mut rng);

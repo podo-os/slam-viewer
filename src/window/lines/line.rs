@@ -1,5 +1,5 @@
 use super::super::points::Point;
-use crate::pipes::VertexFormat;
+use crate::pipes::{GpuVertex, VertexFormat};
 
 use nalgebra::Point3;
 use slam_cv::Number;
@@ -28,6 +28,16 @@ where
 
     pub fn desc(attributes: &Attributes) -> wgpu::VertexBufferDescriptor<'_> {
         Point::desc(attributes)
+    }
+}
+
+impl<N> GpuVertex for Line<N>
+where
+    N: 'static + Number,
+    Point3<N>: VertexFormat<N>,
+{
+    fn weight() -> u64 {
+        2
     }
 }
 

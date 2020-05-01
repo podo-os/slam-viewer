@@ -3,7 +3,7 @@ use core::marker::PhantomData;
 use super::line::Line;
 use super::renderer::LinesRendener;
 use super::source::LineSource;
-use crate::pipes::{StaticShaderModule, VertexFormat};
+use crate::pipes::{GpuVec, StaticShaderModule, VertexFormat};
 
 use nalgebra::Point3;
 use slam_cv::Number;
@@ -42,15 +42,9 @@ where
         let render_pipeline =
             self.build_render_pipeline(device, texture_format, uniform_bind_group_layout);
 
-        // TODO: more efficient buffer
-        let vertex_buffer = device.create_buffer_with_data(
-            bytemuck::cast_slice::<Line<N>, _>(&[Default::default()]),
-            wgpu::BufferUsage::VERTEX,
-        );
-
         LinesRendener {
             render_pipeline,
-            vertex_buffer,
+            buffer: GpuVec::new(wgpu::BufferUsage::VERTEX),
 
             number: Default::default(),
             source: self.source,
