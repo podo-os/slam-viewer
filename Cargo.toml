@@ -5,7 +5,7 @@ authors = ["h <besqer996@gnu.ac.kr>"]
 edition = "2018"
 
 description = "Simple wgpu based SLAM map viewer."
-homepage = "https://nalgebra.org"
+homepage = "https://github.com/podo-os"
 readme = "README.md"
 license = "BSD-3-Clause"
 
