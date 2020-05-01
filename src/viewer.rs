@@ -1,6 +1,6 @@
 use crate::{
     engine::EngineBuilder,
-    pipes::{PipelineBuilder, VertexFormat},
+    pipes::{PipelineBuilder, PipelineDataBuilder, VertexFormat},
     window::{PointsBuilder, WindowBuilder, WindowBuilderDefault},
 };
 
@@ -28,12 +28,11 @@ where
     N: 'static + Number,
     Point3<N>: VertexFormat<N>,
 {
-    pub fn add_world<F, W>(self, world: W) -> Self
+    pub fn add<D>(self, data: D) -> Self
     where
-        F: 'static + Landmark<Number = N>,
-        W: 'static + World<Landmark = F> + WindowBuilderDefault<N>,
+        D: 'static + WindowBuilderDefault<N> + PipelineDataBuilder,
     {
-        self.add_pipe::<W, _>(PointsBuilder::new(world))
+        self.add_pipe::<D, D::Builder>(data.build_data())
     }
 
     pub fn add_window_world<F, W>(self, window: WindowBuilder<N>, world: W) -> Self

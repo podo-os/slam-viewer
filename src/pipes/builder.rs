@@ -9,10 +9,19 @@ pub trait PipelineBuilder {
     ) -> Box<dyn PipelineRenderer>;
 }
 
-pub trait PipelineAutoBuilder<D>
+pub trait PipelineDataBuilder {
+    type Builder: 'static + PipelineBuilder;
+
+    fn build_data(self) -> Self::Builder;
+}
+
+impl<T> PipelineDataBuilder for T
 where
-    Self: PipelineBuilder,
-    D: 'static,
+    Self: 'static + PipelineBuilder,
 {
-    fn auto_build(data: D) -> Box<Self>;
+    type Builder = Self;
+
+    fn build_data(self) -> Self::Builder {
+        self
+    }
 }

@@ -43,14 +43,16 @@ where
                         if window.input(event) == WindowEventState::Unused {
                             match event {
                                 WindowEvent::CloseRequested => *control_flow = ControlFlow::Exit,
-                                WindowEvent::KeyboardInput { input, .. } => match input {
-                                    KeyboardInput {
+                                WindowEvent::KeyboardInput { input, .. } => {
+                                    if let KeyboardInput {
                                         state: ElementState::Pressed,
                                         virtual_keycode: Some(VirtualKeyCode::Escape),
                                         ..
-                                    } => *control_flow = ControlFlow::Exit,
-                                    _ => {}
-                                },
+                                    } = input
+                                    {
+                                        *control_flow = ControlFlow::Exit
+                                    }
+                                }
                                 WindowEvent::Resized(physical_size) => {
                                     window.resize(*physical_size);
                                 }

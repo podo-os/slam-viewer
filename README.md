@@ -34,7 +34,7 @@ If you have your own `World`, add this to your `main.rs`:
 fn main() {
     let world = MyWorld(..);
 
-    slam_viewer::alloc_thread().add_world(world).run();
+    slam_viewer::alloc_thread().add(world).run();
 }
 ```
 

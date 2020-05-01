@@ -38,7 +38,7 @@ where
         ]
     }
 
-    pub fn desc<'a>(attributes: &'a Attributes) -> wgpu::VertexBufferDescriptor<'a> {
+    pub fn desc(attributes: &Attributes) -> wgpu::VertexBufferDescriptor<'_> {
         wgpu::VertexBufferDescriptor {
             stride: mem::size_of::<Self>() as wgpu::BufferAddress,
             step_mode: wgpu::InputStepMode::Vertex,

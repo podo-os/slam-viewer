@@ -1,42 +1,66 @@
 use core::marker::PhantomData;
 
 use super::point::Point;
+use super::renderer::PointsRendener;
 use super::source::PointSource;
-use crate::pipes::{PipelineRenderer, StaticShaderModule, VertexFormat};
+use crate::pipes::{StaticShaderModule, VertexFormat};
 
 use nalgebra::Point3;
 use slam_cv::Number;
 
-pub struct PointsBuilder<N, S, R>
+pub struct PointsBuilder<N, S>
 where
     N: 'static + Number,
     Point3<N>: VertexFormat<N>,
     S: PointSource<N>,
-    R: PipelineRenderer,
 {
     pub source: S,
 
     number: PhantomData<N>,
-    rendener: PhantomData<R>,
 }
 
-impl<N, S, R> PointsBuilder<N, S, R>
+impl<N, S> PointsBuilder<N, S>
 where
     N: 'static + Number,
     Point3<N>: VertexFormat<N>,
     S: PointSource<N>,
-    R: PipelineRenderer,
 {
     pub fn new(source: S) -> Self {
         Self {
             source,
 
             number: Default::default(),
-            rendener: Default::default(),
         }
     }
 
-    pub fn build_render_pipeline(
+    pub fn build(
+        self,
+        device: &wgpu::Device,
+        texture_format: wgpu::TextureFormat,
+        uniform_bind_group_layout: &wgpu::BindGroupLayout,
+    ) -> PointsRendener<N, S> {
+        let render_pipeline =
+            self.build_render_pipeline(device, texture_format, uniform_bind_group_layout);
+
+        // TODO: more efficient buffer
+        let vertex_buffer = device.create_buffer_with_data(
+            bytemuck::cast_slice::<Point<N>, _>(&[Point {
+                position: Point3::new(N::zero(), N::zero(), N::zero()),
+                color: slam_cv::Colors::red(),
+            }]),
+            wgpu::BufferUsage::VERTEX,
+        );
+
+        PointsRendener {
+            render_pipeline,
+            vertex_buffer,
+
+            number: Default::default(),
+            source: self.source,
+        }
+    }
+
+    fn build_render_pipeline(
         &self,
         device: &wgpu::Device,
         texture_format: wgpu::TextureFormat,

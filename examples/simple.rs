@@ -45,9 +45,7 @@ impl slam_cv::feature::KeyPoint for MyFeature {
 impl slam_cv::feature::Descriptor for MyFeature {
     type Distance = ();
 
-    fn get_distance(&self, _other: &Self) -> Self::Distance {
-        ()
-    }
+    fn get_distance(&self, _other: &Self) -> Self::Distance {}
 }
 
 impl slam_cv::feature::Landmark for MyFeature {
@@ -79,5 +77,5 @@ fn main() {
         console_log::init().expect("could not initialize logger");
     }
 
-    slam_viewer::alloc_thread().add_world(world).run();
+    slam_viewer::alloc_thread().add(world).run();
 }
