@@ -1,5 +1,6 @@
 use super::super::builder::{WindowBuilder, WindowBuilderDefault};
 use super::super::camera::{Camera, CameraController};
+use super::super::lines::{Line, LineSource, LinesBuilder, LinesRendener};
 use super::super::points::{Point, PointSource, PointsBuilder, PointsRendener};
 use crate::pipes::{PipelineBuilder, PipelineRenderer, VertexFormat};
 
@@ -14,6 +15,7 @@ where
     W: 'static + World<Landmark = F>,
 {
     points: PointsRendener<N, W>,
+    lines: LinesRendener<N, W>,
 }
 
 impl<N, F, W> PipelineBuilder for W
@@ -21,7 +23,7 @@ where
     N: 'static + Number,
     Point3<N>: VertexFormat<N>,
     F: 'static + Landmark<Number = N>,
-    W: 'static + World<Landmark = F>,
+    W: 'static + World<Landmark = F> + Clone,
 {
     fn build(
         self: Box<Self>,
@@ -29,8 +31,14 @@ where
         texture_format: wgpu::TextureFormat,
         uniform_bind_group_layout: &wgpu::BindGroupLayout,
     ) -> Box<dyn PipelineRenderer> {
+        let world = *self;
         Box::new(WorldRenderer {
-            points: PointsBuilder::new(*self).build(
+            points: PointsBuilder::new(world.clone()).build(
+                device,
+                texture_format,
+                uniform_bind_group_layout,
+            ),
+            lines: LinesBuilder::new(world).build(
                 device,
                 texture_format,
                 uniform_bind_group_layout,
@@ -48,6 +56,7 @@ where
 {
     fn render<'a>(&'a mut self, device: &wgpu::Device, render_pass: &mut wgpu::RenderPass<'a>) {
         self.points.render(device, render_pass);
+        self.lines.render(device, render_pass);
     }
 }
 
@@ -62,6 +71,24 @@ where
         self.collect_landmarks(|lm| Point {
             position: lm.point_world(),
             color: Colors::red(),
+        })
+    }
+}
+
+impl<N, F, W> LineSource<N> for W
+where
+    N: 'static + Number,
+    Point3<N>: VertexFormat<N>,
+    F: 'static + Landmark<Number = N>,
+    W: 'static + World<Landmark = F>,
+{
+    fn collect_visual_lines(&self) -> Vec<Line<N>> {
+        self.collect_landmarks(|lm| Line {
+            start: Point {
+                position: lm.point_world(),
+                color: Colors::red(),
+            },
+            end: Point::default(),
         })
     }
 }

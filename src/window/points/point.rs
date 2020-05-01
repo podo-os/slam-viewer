@@ -18,6 +18,19 @@ where
 
 type Attributes = [wgpu::VertexAttributeDescriptor; 2];
 
+impl<N> Default for Point<N>
+where
+    N: 'static + Number,
+    Point3<N>: VertexFormat<N>,
+{
+    fn default() -> Self {
+        Self {
+            position: Point3::new(N::zero(), N::zero(), N::zero()),
+            color: slam_cv::Colors::white(),
+        }
+    }
+}
+
 impl<N> Point<N>
 where
     N: 'static + Number,

@@ -6,6 +6,7 @@ mod renderers;
 mod uniform;
 
 // Shaders, Pipelines
+mod lines;
 mod points;
 
 pub use self::base::Window;
