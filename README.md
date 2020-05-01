@@ -37,3 +37,8 @@ fn main() {
     slam_viewer::alloc_thread().add_world(world).run();
 }
 ```
+
+## Reference
+
+* `wgpu` tutorial: https://sotrh.github.io/learn-wgpu/
+* `kiss` 3d graphics engine: https://github.com/sebcrozet/kiss3d
