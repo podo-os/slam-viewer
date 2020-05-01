@@ -31,8 +31,6 @@ cargo run --example simple
 If you have your own `World`, add this to your `main.rs`:
 
 ```rust
-use slam_viewer::Viewer;
-
 fn main() {
     let world = MyWorld(..);
 
