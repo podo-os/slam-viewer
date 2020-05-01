@@ -13,9 +13,9 @@ autoexamples = true
 
 include = [
     "src/**/*.rs",
+    "src/**/*.vert",
+    "src/**/*.frag",
     "examples/**/*.rs",
-    "examples/**/*.vert",
-    "examples/**/*.frag",
     "examples/Cargo.toml",
     "Cargo.toml",
     "LICENSE",
