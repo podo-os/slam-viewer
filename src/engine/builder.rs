@@ -1,4 +1,5 @@
 use std::collections::HashMap;
+use std::time;
 
 use crate::pipes::{PipelineBuilder, VertexFormat};
 use crate::window::{WindowBuilder, WindowEventState};
@@ -32,6 +33,13 @@ where
             .into_iter()
             .map(|(builder, pipe)| block_on(builder.build(&event_loop, pipe)))
             .collect::<HashMap<_, _>>();
+
+        let mut time = std::time::Instant::now();
+
+        let time_limit = windows.values().filter_map(|w| w.framerate).min().map(|f| {
+            let micros = (1_000_000.0 / f as f64) as u64 - 500;
+            time::Duration::from_micros(micros)
+        });
 
         event_loop.run(move |event, _, control_flow| {
             match event {
@@ -72,8 +80,20 @@ where
                     }
                 }
                 Event::MainEventsCleared => {
+                    if let Some(time_limit) = time_limit {
+                        let elapsed = time.elapsed();
+
+                        if elapsed < time_limit {
+                            let remain = time_limit - elapsed;
+
+                            std::thread::sleep(remain);
+                        }
+
+                        time = std::time::Instant::now();
+                    }
+
                     for engine_window in windows.values() {
-                        engine_window.window.request_redraw();
+                        engine_window.request_redraw();
                     }
                 }
                 _ => {}

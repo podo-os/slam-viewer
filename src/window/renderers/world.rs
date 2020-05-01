@@ -101,7 +101,7 @@ where
     fn default_window() -> WindowBuilder<f32> {
         WindowBuilder {
             title: Some("Map Viewer".to_string()),
-            framerate: Some(30),
+            framerate: Some(120),
 
             camera: Camera {
                 eye: Point3::new(0., 2., 5.),
@@ -111,7 +111,7 @@ where
                 znear: 0.1,
                 zfar: 100.0,
             },
-            camera_controller: CameraController::new(0.01),
+            camera_controller: CameraController::new(0.1),
         }
     }
 }

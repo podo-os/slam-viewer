@@ -13,7 +13,7 @@ where
     N: 'static + Number,
     Point3<N>: VertexFormat<N>,
 {
-    pub window: window::Window,
+    window: window::Window,
     surface: wgpu::Surface,
     device: wgpu::Device,
     queue: wgpu::Queue,
@@ -25,6 +25,8 @@ where
     // TODO move camera to ShaderPlugin
     camera: Camera<N>,
     camera_controller: CameraController<N>,
+
+    pub framerate: Option<u64>,
 
     uniforms: Uniforms<N>,
     uniform_buffer: wgpu::Buffer,
@@ -111,6 +113,8 @@ where
         let camera = builder.camera;
         let camera_controller = builder.camera_controller;
 
+        let framerate = builder.framerate;
+
         Self {
             window,
             surface,
@@ -123,6 +127,8 @@ where
 
             camera,
             camera_controller,
+
+            framerate,
 
             uniforms,
             uniform_buffer,
@@ -201,6 +207,10 @@ where
         }
 
         self.queue.submit(&[encoder.finish()]);
+    }
+
+    pub fn request_redraw(&self) {
+        self.window.request_redraw();
     }
 
     fn aspect(sc_desc: &wgpu::SwapChainDescriptor) -> N {
