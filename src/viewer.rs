@@ -15,7 +15,6 @@ where
     Viewer { windows: vec![] }
 }
 
-/// TODO: one or **more** windows
 pub struct Viewer<N>
 where
     N: 'static + Number,
