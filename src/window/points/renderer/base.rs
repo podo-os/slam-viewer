@@ -3,7 +3,7 @@ use core::marker::PhantomData;
 use super::super::builder::PointsBuilder;
 use super::super::point::Point;
 use super::super::source::PointSource;
-use crate::pipes::{PipelineBuilder, PipelineRenderer, VertexFormat};
+use crate::pipes::{PipelineAutoBuilder, PipelineBuilder, PipelineRenderer, VertexFormat};
 
 use nalgebra::Point3;
 use slam_cv::Number;
@@ -74,5 +74,16 @@ where
         render_pass.set_pipeline(&self.render_pipeline);
         render_pass.set_vertex_buffer(0, &self.vertex_buffer, 0, 0);
         render_pass.draw(0..num_points, 0..1);
+    }
+}
+
+impl<N, S> PipelineAutoBuilder<S> for PointsBuilder<N, S, PointsRendener<N, S>>
+where
+    N: 'static + Number,
+    Point3<N>: VertexFormat<N>,
+    S: 'static + PointSource<N>,
+{
+    fn auto_build(data: S) -> Box<Self> {
+        Box::new(Self::new(data))
     }
 }

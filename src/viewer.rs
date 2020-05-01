@@ -1,56 +1,69 @@
 use crate::{
     engine::EngineBuilder,
-    window::{Camera, CameraController, PointsBuilder, WindowBuilder},
+    pipes::{PipelineBuilder, VertexFormat},
+    window::{PointsBuilder, WindowBuilder, WindowBuilderDefault},
 };
 
-use nalgebra::{Point3, Vector3};
+use nalgebra::Point3;
 use slam_cv::prelude::*;
+
+pub fn alloc_thread<N>() -> Viewer<N>
+where
+    N: 'static + Number,
+    Point3<N>: VertexFormat<N>,
+{
+    Viewer { windows: vec![] }
+}
 
 /// TODO: one or **more** windows
 pub struct Viewer<N>
 where
     N: 'static + Number,
+    Point3<N>: VertexFormat<N>,
 {
-    pub title: String,
-    pub framerate: Option<u64>,
-
-    pub camera: Camera<N>,
-    pub camera_controller: CameraController<N>,
+    windows: Vec<(WindowBuilder<N>, Box<dyn PipelineBuilder>)>,
 }
 
-impl Default for Viewer<f32> {
-    fn default() -> Self {
-        Self {
-            title: "SLAM Map Viewer".to_string(),
-            framerate: Some(30),
-
-            camera: Camera {
-                eye: Point3::new(0., 2., 5.),
-                target: Point3::new(0., 0., 0.),
-                up: Vector3::y(),
-                fovy: std::f32::consts::FRAC_PI_4,
-                znear: 0.1,
-                zfar: 100.0,
-            },
-            camera_controller: CameraController::new(0.01),
-        }
-    }
-}
-
-impl Viewer<f32> {
-    pub fn run<F, W>(self, world: W) -> !
+impl<N> Viewer<N>
+where
+    N: 'static + Number,
+    Point3<N>: VertexFormat<N>,
+{
+    pub fn add_world<F, W>(self, world: W) -> Self
     where
-        F: 'static + Landmark<Number = f32>,
-        W: 'static + World<Landmark = F>,
+        F: 'static + Landmark<Number = N>,
+        W: 'static + World<Landmark = F> + WindowBuilderDefault<N>,
     {
-        let window = WindowBuilder {
-            camera: self.camera,
-            camera_controller: self.camera_controller,
-            pipeline_builder: Box::new(PointsBuilder::new(world)),
-        };
+        self.add_pipe::<W, _>(PointsBuilder::new(world))
+    }
 
+    pub fn add_window_world<F, W>(self, window: WindowBuilder<N>, world: W) -> Self
+    where
+        F: 'static + Landmark<Number = N>,
+        W: 'static + World<Landmark = F> + WindowBuilderDefault<N>,
+    {
+        self.add_window_pipe(window, PointsBuilder::new(world))
+    }
+
+    fn add_pipe<D, P>(self, pipe: P) -> Self
+    where
+        D: 'static + WindowBuilderDefault<N>,
+        P: 'static + PipelineBuilder,
+    {
+        self.add_window_pipe(D::default_window(), pipe)
+    }
+
+    fn add_window_pipe<P>(mut self, window: WindowBuilder<N>, pipe: P) -> Self
+    where
+        P: 'static + PipelineBuilder,
+    {
+        self.windows.push((window, Box::new(pipe)));
+        self
+    }
+
+    pub fn run(self) -> ! {
         let engine = EngineBuilder {
-            windows: vec![window],
+            windows: self.windows,
         };
 
         engine.run()

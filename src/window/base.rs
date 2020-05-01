@@ -2,7 +2,7 @@ use super::builder::WindowBuilder;
 use super::camera::{Camera, CameraController};
 use super::event::WindowEventState;
 use super::uniform::Uniforms;
-use crate::pipes::{PipelineRenderer, VertexFormat};
+use crate::pipes::{PipelineBuilder, PipelineRenderer, VertexFormat};
 
 use nalgebra::Point3;
 use slam_cv::Number;
@@ -36,7 +36,11 @@ where
     N: 'static + Number,
     Point3<N>: VertexFormat<N>,
 {
-    pub async fn new(window: window::Window, builder: WindowBuilder<N>) -> Self {
+    pub async fn new(
+        window: window::Window,
+        builder: WindowBuilder<N>,
+        pipeline_builder: Box<dyn PipelineBuilder>,
+    ) -> Self {
         let size = window.inner_size();
 
         let surface = wgpu::Surface::create(&window);
@@ -102,9 +106,7 @@ where
         });
 
         let pipeline_rendener =
-            builder
-                .pipeline_builder
-                .build(&device, sc_desc.format, &uniform_bind_group_layout);
+            pipeline_builder.build(&device, sc_desc.format, &uniform_bind_group_layout);
 
         let camera = builder.camera;
         let camera_controller = builder.camera_controller;

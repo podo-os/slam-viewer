@@ -1,6 +1,6 @@
 use std::collections::HashMap;
 
-use crate::pipes::VertexFormat;
+use crate::pipes::{PipelineBuilder, VertexFormat};
 use crate::window::{WindowBuilder, WindowEventState};
 
 use futures::executor::block_on;
@@ -16,7 +16,7 @@ where
     N: 'static + Number,
     Point3<N>: VertexFormat<N>,
 {
-    pub windows: Vec<WindowBuilder<N>>,
+    pub windows: Vec<(WindowBuilder<N>, Box<dyn PipelineBuilder>)>,
 }
 
 impl<N> EngineBuilder<N>
@@ -30,7 +30,7 @@ where
         let mut windows = self
             .windows
             .into_iter()
-            .map(|builder| block_on(builder.build(&event_loop)))
+            .map(|(builder, pipe)| block_on(builder.build(&event_loop, pipe)))
             .collect::<HashMap<_, _>>();
 
         event_loop.run(move |event, _, control_flow| {

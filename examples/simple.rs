@@ -1,9 +1,11 @@
 use nalgebra::{Point2, Point3};
 
 use rand_distr::{Distribution, StandardNormal};
-use slam_viewer::Viewer;
 
+#[derive(Clone)]
 struct MyWorld(Vec<MyFeature>);
+
+#[derive(Clone)]
 struct MyFeature(Point3<f32>);
 
 impl slam_cv::vo::World for MyWorld {
@@ -71,6 +73,11 @@ fn main() {
             .collect(),
     );
 
-    let viewer = Viewer::default();
-    viewer.run(world);
+    #[cfg(target_arch = "wasm32")]
+    {
+        std::panic::set_hook(Box::new(console_error_panic_hook::hook));
+        console_log::init().expect("could not initialize logger");
+    }
+
+    slam_viewer::alloc_thread().add_world(world).run();
 }

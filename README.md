@@ -36,7 +36,6 @@ use slam_viewer::Viewer;
 fn main() {
     let world = MyWorld(..);
 
-    let viewer = Viewer::default();
-    viewer.run(world);
+    slam_viewer::alloc_thread().add_world(world).run();
 }
 ```
