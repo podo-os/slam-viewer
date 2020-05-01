@@ -4,6 +4,14 @@
 
 Simple [wgpu](https://github.com/gfx-rs/wgpu-rs) based SLAM map viewer.
 
+## Current Working
+
+* [x] Draw points
+* [ ] Mouse control
+* [ ] Draw frames
+* [ ] Draw input images
+* [ ] UI (Buttons, ...)
+
 ## Usage
 
 Add this to your `Cargo.toml`:
