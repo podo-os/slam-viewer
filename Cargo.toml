@@ -4,6 +4,11 @@ version = "0.1.0"
 authors = ["h <besqer996@gnu.ac.kr>"]
 edition = "2018"
 
+description = "Simple wgpu based SLAM map viewer."
+homepage = "https://nalgebra.org"
+readme = "README.md"
+license = "BSD-3-Clause"
+
 autoexamples = true
 
 include = [
@@ -20,7 +25,7 @@ include = [
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
-bytemuck = "1.2.0"
+bytemuck = "1.2"
 failure = "0.1"
 futures = "0.3"
 glsl-to-spirv = "0.1"

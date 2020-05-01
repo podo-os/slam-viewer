@@ -1,3 +1,3 @@
 # SLAM Viewer
 
-A [kiss3d](https://github.com/sebcrozet/kiss3d) based SLAM map viewer.
+Simple [wgpu](https://github.com/gfx-rs/wgpu-rs) based SLAM map viewer.
