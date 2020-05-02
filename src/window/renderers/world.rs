@@ -1,10 +1,10 @@
 use super::super::builder::{WindowBuilder, WindowBuilderDefault};
-use super::super::camera::{Camera, CameraController};
+use super::super::camera::{CameraControllerConfig, CameraFrustum};
 use super::super::lines::{Line, LineSource, LinesBuilder, LinesRendener};
 use super::super::points::{Point, PointSource, PointsBuilder, PointsRendener};
 use crate::pipes::{PipelineBuilder, PipelineRenderer, VertexFormat};
 
-use nalgebra::{Point3, Vector3};
+use nalgebra::Point3;
 use slam_cv::{feature::Landmark, vo::World, Colors, Number};
 
 pub struct WorldRenderer<N, F, W>
@@ -103,15 +103,20 @@ where
             title: Some("Map Viewer".to_string()),
             framerate: Some(120),
 
-            camera: Camera {
+            camera: CameraFrustum {
                 eye: Point3::new(0., 2., 5.),
-                target: Point3::new(0., 0., 0.),
-                up: Vector3::y(),
+                at: Point3::new(0., 0., 0.),
+
                 fovy: std::f32::consts::FRAC_PI_4,
                 znear: 0.1,
                 zfar: 100.0,
             },
-            camera_controller: CameraController::new(0.1),
+            camera_controller: CameraControllerConfig {
+                mouse_left_speed: 1.0,
+                mouse_right_speed: 5.0,
+                scroll_speed: 1.0,
+                keyboard_speed: 0.1,
+            },
         }
     }
 }

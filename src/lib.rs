@@ -4,4 +4,4 @@ mod viewer;
 mod window;
 
 pub use viewer::alloc_thread;
-pub use window::{Camera, CameraController};
+pub use window::{CameraControllerConfig, CameraFrustum};

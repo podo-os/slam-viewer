@@ -30,7 +30,7 @@ where
     N: 'static + Number,
 {
     pub fn update_view_proj(&mut self, camera: &Camera<N>, aspect: N) {
-        self.view_proj = camera.build_view_projection_matrix(aspect);
+        self.view_proj = camera.compute_view_proj(aspect);
     }
 }
 

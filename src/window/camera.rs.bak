@@ -1,0 +1,176 @@
+use super::event::WindowEventState;
+
+use nalgebra::{Matrix4, Point3, Vector2, Vector3};
+use slam_cv::Number;
+use winit::event::*;
+
+#[derive(Debug)]
+pub struct Camera<N>
+where
+    N: 'static + Number,
+{
+    pub eye: Point3<N>,
+    pub target: Point3<N>,
+    pub up: Vector3<N>,
+    pub fovy: N,
+    pub znear: N,
+    pub zfar: N,
+}
+
+impl<N> Camera<N>
+where
+    N: 'static + Number,
+{
+    pub(super) fn build_view_projection_matrix(&self, aspect: N) -> Matrix4<N> {
+        let view = Matrix4::look_at_rh(&self.eye, &self.target, &self.up);
+
+        let proj = Matrix4::new_perspective(aspect, self.fovy, self.znear, self.zfar);
+
+        proj * view
+    }
+}
+
+pub struct CameraController<N>
+where
+    N: 'static + Number,
+{
+    speed: N,
+
+    cursor_d: Vector2<N>,
+    cursor_pos: Option<Vector2<N>>,
+    mouse_wheel_d: N,
+
+    pub(super) window_size: Vector2<N>,
+
+    is_left_mouse_pressed: bool,
+    is_right_mouse_pressed: bool,
+}
+
+impl<N> CameraController<N>
+where
+    N: 'static + Number,
+{
+    pub fn new(speed: N) -> Self {
+        Self {
+            speed,
+
+            window_size: Vector2::zeros(),
+
+            cursor_d: Vector2::zeros(),
+            cursor_pos: None,
+            mouse_wheel_d: N::zero(),
+
+            is_left_mouse_pressed: false,
+            is_right_mouse_pressed: false,
+        }
+    }
+
+    pub(super) fn process_events(&mut self, event: &WindowEvent) -> WindowEventState {
+        match event {
+            WindowEvent::Resized(size) => {
+                self.window_size.x = N::from(size.width).unwrap();
+                self.window_size.y = N::from(size.height).unwrap();
+                WindowEventState::Unused
+            }
+            WindowEvent::KeyboardInput {
+                input:
+                    KeyboardInput {
+                        state,
+                        virtual_keycode: Some(keycode),
+                        ..
+                    },
+                ..
+            } => {
+                let is_pressed = *state == ElementState::Pressed;
+                match keycode {
+                    _ => WindowEventState::Unused,
+                }
+            }
+            WindowEvent::MouseInput { state, button, .. } => {
+                self.cursor_pos = None;
+
+                let is_pressed = *state == ElementState::Pressed;
+                match button {
+                    MouseButton::Left => {
+                        self.is_left_mouse_pressed = is_pressed;
+                        WindowEventState::Consumed
+                    }
+                    MouseButton::Right => {
+                        self.is_right_mouse_pressed = is_pressed;
+                        WindowEventState::Consumed
+                    }
+                    _ => WindowEventState::Unused,
+                }
+            }
+            // TODO: calibrate
+            WindowEvent::CursorMoved { position, .. } => {
+                if self.is_left_mouse_pressed || self.is_right_mouse_pressed {
+                    let position =
+                        Vector2::new(N::from(position.x).unwrap(), N::from(position.y).unwrap());
+
+                    if let Some(cursor_pos) = self.cursor_pos {
+                        let delta = position - cursor_pos;
+                        self.cursor_d += delta;
+                    }
+
+                    self.cursor_pos = Some(position);
+                    WindowEventState::Consumed
+                } else {
+                    WindowEventState::Unused
+                }
+            }
+            WindowEvent::MouseWheel { delta, .. } => {
+                self.mouse_wheel_d += match delta {
+                    MouseScrollDelta::LineDelta(_, ny) => N::from(*ny).unwrap(),
+                    // TODO: calibrate
+                    MouseScrollDelta::PixelDelta(dp) => N::from(dp.x.max(dp.y)).unwrap(),
+                };
+                WindowEventState::Consumed
+            }
+            _ => WindowEventState::Unused,
+        }
+    }
+
+    pub(super) fn update_camera(&mut self, camera: &mut Camera<N>) {
+        let mouse_wheel_acc = N::from(5.0).unwrap();
+
+        let distance_squared = nalgebra::distance_squared(&camera.target, &camera.eye) + N::one();
+        let distance = num::Float::sqrt(distance_squared) * N::from(1.0 / 96.0).unwrap();
+
+        let forward = (camera.target - camera.eye).normalize();
+        let right = forward.cross(&camera.up);
+
+        // mouse movement
+        self.cursor_d *= distance;
+
+        if self.is_left_mouse_pressed {
+            camera.target -= right * self.cursor_d.x * self.speed;
+            camera.eye -= right * self.cursor_d.x * self.speed;
+            camera.target += camera.up * self.cursor_d.y * self.speed;
+            camera.eye += camera.up * self.cursor_d.y * self.speed;
+        }
+        if self.is_right_mouse_pressed {
+            // camera.eye -= right * self.cursor_d.x * self.speed * N::from(2).unwrap();
+            camera.up += right * self.cursor_d.y * self.speed * N::from(2).unwrap();
+            camera.up.normalize_mut();
+            camera.eye += camera.up * self.cursor_d.y * self.speed * N::from(2).unwrap();
+        }
+
+        self.cursor_d = Vector2::zeros();
+
+        // mouse wheel movement
+        camera.eye += forward * mouse_wheel_acc * self.mouse_wheel_d * self.speed;
+        self.mouse_wheel_d = N::zero();
+
+        /*let right = forward.cross(&camera.up);
+
+        if self.is_right_pressed {
+            // camera.eye += right * self.speed;
+            camera.target += Vector3::new(N::one(), N::zero(), N::zero()) * self.speed;
+            camera.eye += Vector3::new(N::one(), N::zero(), N::zero()) * self.speed;
+        }
+        if self.is_left_pressed {
+            camera.eye -= right * self.speed;
+        }*/
+    }
+}

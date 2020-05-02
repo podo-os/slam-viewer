@@ -4,7 +4,7 @@ use super::event::WindowEventState;
 use super::uniform::Uniforms;
 use crate::pipes::{PipelineBuilder, PipelineRenderer, VertexFormat};
 
-use nalgebra::Point3;
+use nalgebra::{Point3, Vector2};
 use slam_cv::Number;
 use winit::{event::*, window};
 
@@ -76,8 +76,14 @@ where
         };
         let swap_chain = device.create_swap_chain(&surface, &sc_desc);
 
+        let camera = builder.camera.into();
+        let mut camera_controller: CameraController<N> = builder.camera_controller.into();
+
+        camera_controller.window_size =
+            Vector2::new(N::from(size.width).unwrap(), N::from(size.height).unwrap());
+
         let mut uniforms = Uniforms::default();
-        uniforms.update_view_proj(&builder.camera, Self::aspect(&sc_desc));
+        uniforms.update_view_proj(&camera, Self::aspect(&sc_desc));
 
         let uniform_buffer = device.create_buffer_with_data(
             bytemuck::cast_slice(&[uniforms]),
@@ -110,9 +116,6 @@ where
         let pipeline_rendener =
             pipeline_builder.build(&device, sc_desc.format, &uniform_bind_group_layout);
 
-        let camera = builder.camera;
-        let camera_controller = builder.camera_controller;
-
         let framerate = builder.framerate;
 
         Self {
@@ -143,10 +146,7 @@ where
     }
 
     pub fn input(&mut self, event: &WindowEvent) -> WindowEventState {
-        match event {
-            WindowEvent::KeyboardInput { .. } => self.camera_controller.process_events(event),
-            _ => WindowEventState::Unused,
-        }
+        self.camera_controller.process_events(event)
     }
 
     pub fn update(&mut self) {

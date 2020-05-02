@@ -1,6 +1,6 @@
 [package]
 name = "slam-viewer"
-version = "0.1.1"
+version = "0.1.2"
 authors = ["h <besqer996@gnu.ac.kr>"]
 edition = "2018"
 
@@ -31,6 +31,7 @@ futures = "0.3"
 glsl-to-spirv = "0.1"
 image = "0.23"
 nalgebra = "0.21"
+num = "0.2"
 slam-cv = "0.1"
 wgpu = "0.5"
 winit = "0.22"

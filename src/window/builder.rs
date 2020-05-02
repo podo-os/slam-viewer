@@ -1,5 +1,5 @@
 use super::base::Window;
-use super::camera::{Camera, CameraController};
+use super::camera::{CameraControllerConfig, CameraFrustum};
 use crate::pipes::{PipelineBuilder, VertexFormat};
 
 use nalgebra::Point3;
@@ -14,8 +14,8 @@ where
     pub title: Option<String>,
     pub framerate: Option<u64>,
 
-    pub camera: Camera<N>,
-    pub camera_controller: CameraController<N>,
+    pub camera: CameraFrustum<N>,
+    pub camera_controller: CameraControllerConfig<N>,
 }
 
 pub trait WindowBuilderDefault<N>
