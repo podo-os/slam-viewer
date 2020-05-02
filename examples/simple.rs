@@ -77,5 +77,9 @@ fn main() {
         console_log::init().expect("could not initialize logger");
     }
 
+    // make a window with this thread
     slam_viewer::alloc_thread().add(world).run();
+
+    // make a window with a new thread
+    // slam_viewer::alloc_thread().add(world).spawn().wait();
 }

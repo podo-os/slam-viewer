@@ -1,6 +1,7 @@
 use std::collections::HashMap;
 use std::time;
 
+use super::base::Engine;
 use crate::pipes::{PipelineBuilder, VertexFormat};
 use crate::window::{WindowBuilder, WindowEventState};
 
@@ -17,7 +18,7 @@ where
     N: 'static + Number,
     Point3<N>: VertexFormat<N>,
 {
-    pub windows: Vec<(WindowBuilder<N>, Box<dyn PipelineBuilder>)>,
+    pub windows: Vec<(WindowBuilder<N>, Box<dyn PipelineBuilder + Send>)>,
 }
 
 impl<N> EngineBuilder<N>
@@ -27,7 +28,17 @@ where
 {
     pub fn run(self) -> ! {
         let event_loop = EventLoop::new();
+        self.run_forever(event_loop)
+    }
 
+    pub fn spawn(self) -> Engine {
+        Engine::new(move || {
+            let event_loop = winit::platform::unix::EventLoopExtUnix::new_any_thread();
+            self.run_forever(event_loop)
+        })
+    }
+
+    fn run_forever(self, event_loop: EventLoop<()>) -> ! {
         let mut windows = self
             .windows
             .into_iter()
