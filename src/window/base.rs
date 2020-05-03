@@ -63,24 +63,28 @@ where
         let instance = wgpu::Instance::new();
         let surface = unsafe { instance.create_surface(&window) };
 
-        let adapter = instance.request_adapter(
-            &wgpu::RequestAdapterOptions {
-                power_preference: wgpu::PowerPreference::Default,
-                compatible_surface: Some(&surface),
-            },
-            // Vulkan + Metal + DX12 + Browser WebGPU
-            wgpu::BackendBit::PRIMARY,
-        )
-        .await
-        .unwrap();
+        let adapter = instance
+            .request_adapter(
+                &wgpu::RequestAdapterOptions {
+                    power_preference: wgpu::PowerPreference::Default,
+                    compatible_surface: Some(&surface),
+                },
+                // Vulkan + Metal + DX12 + Browser WebGPU
+                wgpu::BackendBit::PRIMARY,
+            )
+            .await
+            .unwrap();
 
         let (device, queue) = adapter
-            .request_device(&wgpu::DeviceDescriptor {
-                extensions: wgpu::Extensions {
-                    anisotropic_filtering: false,
+            .request_device(
+                &wgpu::DeviceDescriptor {
+                    extensions: wgpu::Extensions {
+                        anisotropic_filtering: false,
+                    },
+                    limits: Default::default(),
                 },
-                limits: Default::default(),
-            }, None)
+                None,
+            )
             .await
             .unwrap();
 
@@ -89,7 +93,6 @@ where
 
         #[cfg(target_arch = "wasm32")]
         let sc_format = wgpu::TextureFormat::Bgra8Unorm;
-    
         let sc_desc = wgpu::SwapChainDescriptor {
             usage: wgpu::TextureUsage::OUTPUT_ATTACHMENT,
             format: sc_format,

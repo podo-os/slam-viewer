@@ -1,8 +1,8 @@
 use std::collections::HashMap;
 
 use super::base::Engine;
-use crate::pipes::{PipelineBuilder, VertexFormat};
 use super::timer::Timer;
+use crate::pipes::{PipelineBuilder, VertexFormat};
 use crate::window::{WindowBuilder, WindowEventState};
 
 #[cfg(not(target_arch = "wasm32"))]
