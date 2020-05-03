@@ -1,4 +1,3 @@
-use super::point::Point;
 use crate::pipes::VertexFormat;
 
 use nalgebra::Point3;
@@ -9,5 +8,7 @@ where
     N: 'static + Number,
     Point3<N>: VertexFormat<N>,
 {
-    fn collect_visual_points(&self) -> Vec<Point<N>>;
+    const COLOR: [f32; 3];
+
+    fn collect_visual_points(&self) -> Vec<Point3<N>>;
 }

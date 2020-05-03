@@ -1,7 +1,7 @@
 use crate::{
     engine::{Engine, EngineBuilder},
     pipes::{PipelineBuilder, PipelineDataBuilder, VertexFormat},
-    window::{PointsBuilder, WindowBuilder, WindowBuilderDefault},
+    window::{WindowBuilder, WindowBuilderDefault},
 };
 
 use nalgebra::Point3;
@@ -35,14 +35,6 @@ where
         D::Builder: Send,
     {
         self.add_pipe::<D, D::Builder>(data.build_data())
-    }
-
-    pub fn add_window_world<F, W>(self, window: WindowBuilder<N>, world: W) -> Self
-    where
-        F: 'static + Landmark<Number = N>,
-        W: 'static + World<Landmark = F> + WindowBuilderDefault<N> + Send,
-    {
-        self.add_window_pipe(window, PointsBuilder::new(world))
     }
 
     fn add_pipe<D, P>(self, pipe: P) -> Self

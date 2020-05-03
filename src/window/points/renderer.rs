@@ -46,7 +46,14 @@ where
     fn render<'a>(&'a mut self, device: &wgpu::Device, render_pass: &mut wgpu::RenderPass<'a>) {
         render_pass.set_pipeline(&self.render_pipeline);
 
-        let points = self.source.collect_visual_points();
+        let color = S::COLOR.into();
+
+        let points = self
+            .source
+            .collect_visual_points()
+            .into_iter()
+            .map(|p| Point { position: p, color })
+            .collect();
 
         self.buffer.update(device, points);
         self.buffer.set_buffer(render_pass);

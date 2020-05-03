@@ -3,7 +3,7 @@ use core::mem;
 use crate::pipes::{GpuVertex, VertexFormat};
 
 use nalgebra::Point3;
-use slam_cv::Number;
+use slam_cv::{Colors, Number};
 
 #[repr(C)]
 #[derive(Copy, Clone, Debug)]
@@ -26,7 +26,7 @@ where
     fn default() -> Self {
         Self {
             position: Point3::new(N::zero(), N::zero(), N::zero()),
-            color: slam_cv::Colors::white(),
+            color: Colors::red().into(),
         }
     }
 }

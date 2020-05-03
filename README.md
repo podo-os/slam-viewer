@@ -8,7 +8,7 @@ Simple [wgpu](https://github.com/gfx-rs/wgpu-rs) based SLAM map viewer.
 
 * [x] Draw points
 * [x] Mouse control
-* [ ] Draw frames
+* [x] Draw frames
 * [ ] Draw input images
 * [ ] UI (Buttons, ...)
 

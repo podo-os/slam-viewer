@@ -1,6 +1,6 @@
 [package]
 name = "slam-viewer"
-version = "0.1.2"
+version = "0.1.3"
 authors = ["h <besqer996@gnu.ac.kr>"]
 edition = "2018"
 

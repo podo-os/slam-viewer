@@ -1,32 +1,31 @@
 use core::marker::PhantomData;
 
-use super::super::points::Point;
-use super::builder::LinesBuilder;
-use super::line::Line;
-use super::source::LineSource;
+use super::builder::IsometriesBuilder;
+use super::isometry::Isometry;
+use super::source::IsometrySource;
 use crate::pipes::{GpuVec, PipelineBuilder, PipelineRenderer, VertexFormat};
 
 use nalgebra::Point3;
 use slam_cv::Number;
 
-pub struct LinesRendener<N, S>
+pub struct IsometriesRendener<N, S>
 where
     N: 'static + Number,
     Point3<N>: VertexFormat<N>,
-    S: 'static + LineSource<N>,
+    S: 'static + IsometrySource<N>,
 {
     pub render_pipeline: wgpu::RenderPipeline,
-    pub buffer: GpuVec<Line<N>>,
+    pub buffer: GpuVec<Isometry<N>>,
 
     pub number: PhantomData<N>,
     pub source: S,
 }
 
-impl<N, S> PipelineBuilder for LinesBuilder<N, S>
+impl<N, S> PipelineBuilder for IsometriesBuilder<N, S>
 where
     N: 'static + Number,
     Point3<N>: VertexFormat<N>,
-    S: 'static + LineSource<N>,
+    S: 'static + IsometrySource<N>,
 {
     fn build(
         self: Box<Self>,
@@ -38,34 +37,26 @@ where
     }
 }
 
-impl<N, S> PipelineRenderer for LinesRendener<N, S>
+impl<N, S> PipelineRenderer for IsometriesRendener<N, S>
 where
     N: 'static + Number,
     Point3<N>: VertexFormat<N>,
-    S: LineSource<N>,
+    S: IsometrySource<N>,
 {
     fn render<'a>(&'a mut self, device: &wgpu::Device, render_pass: &mut wgpu::RenderPass<'a>) {
         render_pass.set_pipeline(&self.render_pipeline);
 
+        let size = S::SIZE.into();
         let color = S::COLOR.into();
 
-        let lines = self
+        let isometries = self
             .source
-            .collect_visual_lines()
+            .collect_visual_isometries()
             .into_iter()
-            .map(|[p1, p2]| Line {
-                start: Point {
-                    position: p1,
-                    color,
-                },
-                end: Point {
-                    position: p2,
-                    color,
-                },
-            })
+            .map(|i| Isometry::from_iso(i, size, color))
             .collect();
 
-        self.buffer.update(device, lines);
+        self.buffer.update(device, isometries);
         self.buffer.set_buffer(render_pass);
     }
 }

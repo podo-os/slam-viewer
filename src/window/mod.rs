@@ -9,9 +9,10 @@ mod uniform;
 mod lines;
 mod points;
 
+// Complex objects
+mod isometries;
+
 pub use self::base::Window;
 pub use self::builder::{WindowBuilder, WindowBuilderDefault};
 pub use self::camera::{CameraControllerConfig, CameraFrustum};
 pub use self::event::WindowEventState;
-
-pub use self::points::PointsBuilder;
