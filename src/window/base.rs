@@ -93,6 +93,7 @@ where
 
         #[cfg(target_arch = "wasm32")]
         let sc_format = wgpu::TextureFormat::Bgra8Unorm;
+
         let sc_desc = wgpu::SwapChainDescriptor {
             usage: wgpu::TextureUsage::OUTPUT_ATTACHMENT,
             format: sc_format,
