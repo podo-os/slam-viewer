@@ -44,7 +44,7 @@ fn main() {
 
 The manual is taken from `wgpu-rs`.
 Note that running on the web is quite unstable and only available in `Windows`.
-For more information, please visit [the official `wgpu-rs` repository](https://raw.githubusercontent.com/gfx-rs/wgpu-rs/master/README.md).
+For more information, please visit [the official `wgpu-rs` repository](https://github.com/gfx-rs/wgpu-rs).
 
 To run examples on the `wasm32-unknown-unknown` target, first build the example as usual, then run `wasm-bindgen`:
 
