@@ -9,7 +9,7 @@ impl Timer {
     #[cfg(not(target_arch = "wasm32"))]
     pub fn try_new(time_limit: time::Duration) -> Option<Self> {
         Some(Self {
-            time: chrono::Instant::now(),
+            time: std::time::Instant::now(),
             time_limit,
         })
     }
