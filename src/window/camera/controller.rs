@@ -156,24 +156,24 @@ where
 
         // mouse movement
         if self.is_left_mouse_pressed {
-            camera.handle_left_button_displacement(self.cursor_d * self.config.mouse_left_speed);
+            camera.rotate(self.cursor_d * self.config.mouse_left_speed);
         }
         if self.is_right_mouse_pressed {
-            camera.handle_right_button_displacement(self.cursor_d * self.config.mouse_right_speed);
+            camera.move_to(self.cursor_d * self.config.mouse_right_speed);
         }
         self.cursor_d = Vector2::zeros();
 
         // scroll movement
-        camera.handle_scroll(self.mouse_wheel_d * self.config.scroll_speed);
+        camera.scale(self.mouse_wheel_d * self.config.scroll_speed);
         self.mouse_wheel_d = N::zero();
 
         // keyboard input
         let mut dkey = Vector2::<N>::zeros();
         if self.is_left_key_pressed {
-            dkey.x -= N::one();
+            dkey.x += N::one();
         }
         if self.is_right_key_pressed {
-            dkey.x += N::one();
+            dkey.x -= N::one();
         }
         if self.is_up_key_pressed {
             dkey.y += N::one();
@@ -183,6 +183,7 @@ where
         }
         dkey *= self.config.keyboard_speed;
 
-        camera.handle_keyboard(dkey);
+        camera.move_to(Vector2::new(dkey.x, N::zero()));
+        camera.scale(dkey.y);
     }
 }

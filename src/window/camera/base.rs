@@ -50,14 +50,14 @@ where
         proj.as_matrix() * view
     }
 
-    pub fn handle_left_button_displacement(&mut self, dpos: Vector2<N>) {
+    pub fn rotate(&mut self, dpos: Vector2<N>) {
         self.yaw += dpos.x;
         self.pitch += dpos.y;
 
         self.update_restrictions();
     }
 
-    pub fn handle_right_button_displacement(&mut self, dpos: Vector2<N>) {
+    pub fn move_to(&mut self, dpos: Vector2<N>) {
         let at = self.at();
         let dir = (at - self.eye).normalize();
         let tangent = self.coord_system.up_axis.cross(&dir).normalize();
@@ -66,14 +66,10 @@ where
         self.eye += tangent * dpos.x + bitangent * dpos.y;
     }
 
-    pub fn handle_scroll(&mut self, yoff: N) {
+    pub fn scale(&mut self, yoff: N) {
         let front = self.observer_frame() * Vector3::z();
 
         self.eye += front * yoff;
-    }
-
-    pub fn handle_keyboard(&mut self, dpos: Vector2<N>) {
-        self.eye += Vector3::new(dpos.x, dpos.y, N::zero());
     }
 
     /// The point the camera is looking at.
