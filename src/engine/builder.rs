@@ -1,11 +1,16 @@
 use std::collections::HashMap;
-use std::time;
 
 use super::base::Engine;
 use crate::pipes::{PipelineBuilder, VertexFormat};
+use super::timer::Timer;
 use crate::window::{WindowBuilder, WindowEventState};
 
+#[cfg(not(target_arch = "wasm32"))]
 use futures::executor::block_on;
+
+#[cfg(target_arch = "wasm32")]
+use wasm_bindgen_futures::spawn_local as block_on;
+
 use nalgebra::Point3;
 use slam_cv::Number;
 use winit::{
@@ -26,31 +31,34 @@ where
     N: 'static + Number,
     Point3<N>: VertexFormat<N>,
 {
-    pub fn run(self) -> ! {
+    pub fn run(self) {
         let event_loop = EventLoop::new();
-        self.run_forever(event_loop)
+        block_on(self.run_forever(event_loop))
     }
 
     pub fn spawn(self) -> Engine {
         Engine::new(move || {
-            let event_loop = winit::platform::unix::EventLoopExtUnix::new_any_thread();
-            self.run_forever(event_loop)
+            let event_loop = super::event_loop::new_event_loop();
+            block_on(self.run_forever(event_loop))
         })
     }
 
-    fn run_forever(self, event_loop: EventLoop<()>) -> ! {
-        let mut windows = self
-            .windows
-            .into_iter()
-            .map(|(builder, pipe)| block_on(builder.build(&event_loop, pipe)))
-            .collect::<HashMap<_, _>>();
+    async fn run_forever(self, event_loop: EventLoop<()>) {
+        let mut windows = HashMap::new();
+        for (builder, pipe) in self.windows {
+            let (id, window) = builder.build(&event_loop, pipe).await;
+            windows.insert(id, window);
+        }
 
-        let mut time = std::time::Instant::now();
-
-        let time_limit = windows.values().filter_map(|w| w.framerate).min().map(|f| {
-            let micros = (1_000_000.0 / f as f64) as u64 - 500;
-            time::Duration::from_micros(micros)
-        });
+        let mut timer = windows
+            .values()
+            .filter_map(|w| w.framerate)
+            .min()
+            .map(|f| {
+                let micros = (1_000_000.0 / f as f64) as u64 - 500;
+                std::time::Duration::from_micros(micros)
+            })
+            .and_then(Timer::try_new);
 
         event_loop.run(move |event, _, control_flow| {
             match event {
@@ -91,16 +99,8 @@ where
                     }
                 }
                 Event::MainEventsCleared => {
-                    if let Some(time_limit) = time_limit {
-                        let elapsed = time.elapsed();
-
-                        if elapsed < time_limit {
-                            let remain = time_limit - elapsed;
-
-                            std::thread::sleep(remain);
-                        }
-
-                        time = std::time::Instant::now();
+                    if let Some(timer) = &mut timer {
+                        timer.sync();
                     }
 
                     for engine_window in windows.values() {

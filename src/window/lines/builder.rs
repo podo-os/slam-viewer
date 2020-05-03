@@ -58,13 +58,11 @@ where
         uniform_bind_group_layout: &wgpu::BindGroupLayout,
     ) -> wgpu::RenderPipeline {
         const VS_SRC: StaticShaderModule = StaticShaderModule {
-            glsl_source: include_str!("../points/shader.vert"),
-            shader_type: glsl_to_spirv::ShaderType::Vertex,
+            spirv_source: include_bytes!("../points/shader.vert.spv"),
             entry_point: None,
         };
         const FS_SRC: StaticShaderModule = StaticShaderModule {
-            glsl_source: include_str!("../points/shader.frag"),
-            shader_type: glsl_to_spirv::ShaderType::Fragment,
+            spirv_source: include_bytes!("../points/shader.frag.spv"),
             entry_point: None,
         };
 

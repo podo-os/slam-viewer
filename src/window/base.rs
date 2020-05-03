@@ -45,9 +45,25 @@ where
     ) -> Self {
         let size = window.inner_size();
 
-        let surface = wgpu::Surface::create(&window);
+        #[cfg(target_arch = "wasm32")]
+        {
+            use winit::platform::web::WindowExtWebSys;
 
-        let adapter = wgpu::Adapter::request(
+            // On wasm, append the canvas to the document body
+            web_sys::window()
+                .and_then(|win| win.document())
+                .and_then(|doc| doc.body())
+                .and_then(|body| {
+                    body.append_child(&web_sys::Element::from(window.canvas()))
+                        .ok()
+                })
+                .expect("couldn't append canvas to document body");
+        }
+
+        let instance = wgpu::Instance::new();
+        let surface = unsafe { instance.create_surface(&window) };
+
+        let adapter = instance.request_adapter(
             &wgpu::RequestAdapterOptions {
                 power_preference: wgpu::PowerPreference::Default,
                 compatible_surface: Some(&surface),
@@ -64,12 +80,19 @@ where
                     anisotropic_filtering: false,
                 },
                 limits: Default::default(),
-            })
-            .await;
+            }, None)
+            .await
+            .unwrap();
 
+        #[cfg(not(target_arch = "wasm32"))]
+        let sc_format = wgpu::TextureFormat::Bgra8UnormSrgb;
+
+        #[cfg(target_arch = "wasm32")]
+        let sc_format = wgpu::TextureFormat::Bgra8Unorm;
+    
         let sc_desc = wgpu::SwapChainDescriptor {
             usage: wgpu::TextureUsage::OUTPUT_ATTACHMENT,
-            format: wgpu::TextureFormat::Bgra8UnormSrgb,
+            format: sc_format,
             width: size.width,
             height: size.height,
             present_mode: wgpu::PresentMode::Immediate,
@@ -174,7 +197,7 @@ where
 
         // We need to remember to submit our CommandEncoder's output
         // otherwise we won't see any change.
-        self.queue.submit(&[encoder.finish()]);
+        self.queue.submit(Some(encoder.finish()));
     }
 
     pub fn render(&mut self) {
@@ -206,7 +229,7 @@ where
                 .render(&self.device, &mut render_pass);
         }
 
-        self.queue.submit(&[encoder.finish()]);
+        self.queue.submit(Some(encoder.finish()));
     }
 
     pub fn request_redraw(&self) {

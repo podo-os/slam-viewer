@@ -24,21 +24,32 @@ include = [
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
+[build-dependencies]
+glob = "0.3"
+glsl-to-spirv = "0.1"
+
 [dependencies]
 bytemuck = "1.2"
 failure = "0.1"
 futures = "0.3"
-glsl-to-spirv = "0.1"
 image = "0.23"
 nalgebra = "0.21"
 num = "0.2"
 slam-cv = "0.1"
-wgpu = "0.5"
-winit = "0.22"
+wgpu = { git = "https://github.com/gfx-rs/wgpu-rs" }
+winit = { version = "0.22", features = ["web-sys"] }
+
+[target.'cfg(target_arch = "wasm32")'.dependencies]
+wasm-bindgen-futures = "0.4"
+web-sys = "0.3"
 
 [dev-dependencies]
-rand = "0.7"
+rand = { version = "0.7", features = ["wasm-bindgen"] }
 rand_distr = "0.2"
 
+[target.'cfg(target_arch = "wasm32")'.dev-dependencies]
+console_error_panic_hook = "0.1"
+console_log = "0.2"
+
 [profile.dev]
-opt-level = 3
+# opt-level = 3

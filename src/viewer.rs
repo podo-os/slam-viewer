@@ -61,7 +61,7 @@ where
         self
     }
 
-    pub fn run(self) -> ! {
+    pub fn run(self) {
         self.compile().run()
     }
 
