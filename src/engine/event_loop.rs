@@ -1,6 +1,6 @@
 use winit::event_loop::EventLoop;
 
-#[cfg(target_os = "unix")]
+#[cfg(target_os = "linux")]
 pub fn new_event_loop() -> EventLoop<()> {
     winit::platform::unix::EventLoopExtUnix::new_any_thread()
 }
@@ -12,6 +12,5 @@ pub fn new_event_loop() -> EventLoop<()> {
 
 #[cfg(target_arch = "wasm32")]
 pub fn new_event_loop() -> EventLoop<()> {
-    // TODO: multi-threaded event loop in wasm32
-    EventLoop::new()
+    unimplemented!("multi-threaded event loop in wasm32 is not supported yet")
 }
