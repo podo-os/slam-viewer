@@ -71,8 +71,6 @@ where
     KF: 'static + KeyFrame<Number = f32, Feature = F>,
     W: 'static + World<Number = f32, KeyFrame = KF, Landmark = F>,
 {
-    const COLOR: [f32; 3] = Colors::red();
-
     fn collect_visual_points(&self) -> Vec<Point3<f32>> {
         self.collect_landmarks(Landmark::point_world)
     }
@@ -84,8 +82,6 @@ where
     KF: 'static + KeyFrame<Number = f32, Feature = F>,
     W: 'static + World<Number = f32, KeyFrame = KF, Landmark = F>,
 {
-    const COLOR: [f32; 3] = Colors::blue();
-
     fn collect_visual_lines(&self) -> Vec<[Point3<f32>; 2]> {
         let mut prev = None;
 
@@ -107,7 +103,6 @@ where
     KF: 'static + KeyFrame<Number = f32, Feature = F>,
     W: 'static + World<Number = f32, KeyFrame = KF, Landmark = F>,
 {
-    const COLOR: [f32; 3] = Colors::green();
     const SIZE: [f32; 2] = [0.2, 0.16];
 
     fn collect_visual_isometries(&self) -> Vec<Isometry3<f32>> {
