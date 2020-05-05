@@ -41,7 +41,7 @@ image = "0.23"
 nalgebra = "0.21"
 num = "0.2"
 slam-cv = "0.1"
-wgpu = { git = "https://github.com/gfx-rs/wgpu-rs" }
+wgpu = "0.5"
 winit = { version = "0.22", features = ["web-sys"] }
 
 cv-core = { version = "0.10", optional = true }
