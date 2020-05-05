@@ -6,7 +6,7 @@ use super::super::points::{PointSource, PointsBuilder, PointsRendener};
 use crate::pipes::{PipelineBuilder, PipelineRenderer};
 
 use nalgebra::{Isometry3, Point3};
-use slam_cv::{feature::Landmark, frame::KeyFrame, vo::World, Colors};
+use slam_cv::{feature::Landmark, frame::KeyFrame, vo::World};
 
 pub struct WorldRenderer<F, KF, W>
 where
