@@ -21,8 +21,9 @@ where
     pub source: S,
 }
 
-impl<N, S> PipelineBuilder for IsometriesBuilder<N, S>
+impl<N, S> PipelineBuilder<N> for IsometriesBuilder<N, S>
 where
+    Self: Send,
     N: 'static + Number,
     Point3<N>: VertexFormat<N>,
     S: 'static + IsometrySource<N>,

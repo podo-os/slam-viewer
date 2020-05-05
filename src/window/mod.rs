@@ -2,7 +2,6 @@ mod base;
 mod builder;
 mod camera;
 mod event;
-mod renderers;
 mod uniform;
 
 // Shaders, Pipelines
@@ -12,7 +11,14 @@ mod points;
 // Complex objects
 mod isometries;
 
+pub mod models;
+
 pub use self::base::Window;
-pub use self::builder::{WindowBuilder, WindowBuilderDefault};
+pub use self::builder::WindowBuilder;
 pub use self::camera::{CameraControllerConfig, CameraFrustum};
 pub use self::event::WindowEventState;
+
+pub use self::lines::LineSource;
+pub use self::points::PointSource;
+
+pub use self::isometries::IsometrySource;

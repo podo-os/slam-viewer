@@ -1,10 +1,10 @@
 use crate::{
     engine::{Engine, EngineBuilder},
     pipes::{PipelineBuilder, PipelineDataBuilder, VertexFormat},
-    window::{WindowBuilder, WindowBuilderDefault},
+    window::{models, IsometrySource, LineSource, PointSource, WindowBuilder},
 };
 
-use nalgebra::Point3;
+use nalgebra::{allocator::Allocator, DefaultAllocator, DimName, Point, Point3};
 use slam_cv::prelude::*;
 
 /// **caution**: This function can only be called once per process.
@@ -21,7 +21,7 @@ where
     N: 'static + Number,
     Point3<N>: VertexFormat<N>,
 {
-    windows: Vec<(WindowBuilder<N>, Box<dyn PipelineBuilder + Send>)>,
+    windows: Vec<(WindowBuilder<N>, Box<dyn PipelineBuilder<N>>)>,
 }
 
 impl<N> Viewer<N>
@@ -29,25 +29,53 @@ where
     N: 'static + Number,
     Point3<N>: VertexFormat<N>,
 {
-    pub fn add<D>(self, data: D) -> Self
+    pub fn add_world<F, KF, W>(self, world: W) -> Self
     where
-        D: 'static + WindowBuilderDefault<N> + PipelineDataBuilder,
-        D::Builder: Send,
+        F: 'static + Landmark<Number = N> + Clone,
+        KF: 'static + KeyFrame<Number = N, Feature = F> + Clone,
+        W: 'static + World<Number = N, KeyFrame = KF, Landmark = F> + Clone,
+        models::WorldModel<N, F, KF, W>:
+            PipelineDataBuilder<N> + PointSource<N> + LineSource<N> + IsometrySource<N>,
     {
-        self.add_pipe::<D, D::Builder>(data.build_data())
+        self.add(models::WorldModel::new(world))
     }
 
-    fn add_pipe<D, P>(self, pipe: P) -> Self
+    pub fn add_points<D>(self, points: Vec<Point<N, D>>) -> Self
     where
-        D: 'static + WindowBuilderDefault<N>,
-        P: 'static + PipelineBuilder + Send,
+        D: DimName,
+        DefaultAllocator: Allocator<N, D>,
+        models::PointsModel<N, D>: PipelineBuilder<N> + PipelineDataBuilder<N> + PointSource<f32>,
     {
-        self.add_window_pipe(D::default_window(), pipe)
+        self.add(models::PointsModel::new(points))
+    }
+
+    #[cfg(feature = "rust-cv")]
+    pub fn add_matches<D>(self, matches: Vec<cv_core::FeatureMatch<Point<N, D>>>) -> Self
+    where
+        D: DimName,
+        DefaultAllocator: Allocator<N, D>,
+        models::MatchesModel<N, D>:
+            PipelineBuilder<N> + PipelineDataBuilder<N> + PointSource<f32> + LineSource<f32>,
+    {
+        self.add(models::MatchesModel::new(matches))
+    }
+}
+
+impl<N> Viewer<N>
+where
+    N: 'static + Number,
+    Point3<N>: VertexFormat<N>,
+{
+    fn add<D>(self, data: D) -> Self
+    where
+        D: 'static + PipelineBuilder<N> + PipelineDataBuilder<N>,
+    {
+        self.add_window_pipe(data.default_window(), data)
     }
 
     fn add_window_pipe<P>(mut self, window: WindowBuilder<N>, pipe: P) -> Self
     where
-        P: 'static + PipelineBuilder + Send,
+        P: 'static + PipelineBuilder<N>,
     {
         self.windows.push((window, Box::new(pipe)));
         self

@@ -41,7 +41,7 @@ where
     pub async fn new(
         window: window::Window,
         builder: WindowBuilder<N>,
-        pipeline_builder: Box<dyn PipelineBuilder>,
+        pipeline_builder: Box<dyn PipelineBuilder<N>>,
     ) -> Self {
         let size = window.inner_size();
 

@@ -18,14 +18,6 @@ where
     pub camera_controller: CameraControllerConfig<N>,
 }
 
-pub trait WindowBuilderDefault<N>
-where
-    N: 'static + Number,
-    Point3<N>: VertexFormat<N>,
-{
-    fn default_window() -> WindowBuilder<N>;
-}
-
 impl<N> WindowBuilder<N>
 where
     N: 'static + Number,
@@ -34,7 +26,7 @@ where
     pub async fn build<T>(
         self,
         event_loop: &EventLoop<T>,
-        pipeline_builder: Box<dyn PipelineBuilder>,
+        pipeline_builder: Box<dyn PipelineBuilder<N>>,
     ) -> (window::WindowId, Window<N>) {
         let window = window::WindowBuilder::new().build(&event_loop).unwrap();
         let id = window.id();

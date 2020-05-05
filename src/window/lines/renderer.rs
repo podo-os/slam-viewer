@@ -22,8 +22,9 @@ where
     pub source: S,
 }
 
-impl<N, S> PipelineBuilder for LinesBuilder<N, S>
+impl<N, S> PipelineBuilder<N> for LinesBuilder<N, S>
 where
+    Self: Send,
     N: 'static + Number,
     Point3<N>: VertexFormat<N>,
     S: 'static + LineSource<N>,

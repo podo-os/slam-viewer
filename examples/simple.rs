@@ -1,5 +1,4 @@
 use nalgebra::{Isometry3, Point2, Point3, Quaternion, Translation3, Unit};
-
 use rand_distr::{Distribution, StandardNormal};
 
 #[derive(Clone)]
@@ -137,8 +136,8 @@ fn main() {
     }
 
     // make a window with this thread
-    slam_viewer::alloc_thread().add(world).run();
+    slam_viewer::alloc_thread().add_world(world).run();
 
     // make a window with a new thread
-    // slam_viewer::alloc_thread().add(world).spawn().wait();
+    // slam_viewer::alloc_thread().add_world(world).spawn().wait();
 }

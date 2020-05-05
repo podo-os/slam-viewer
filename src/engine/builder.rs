@@ -23,7 +23,7 @@ where
     N: 'static + Number,
     Point3<N>: VertexFormat<N>,
 {
-    pub windows: Vec<(WindowBuilder<N>, Box<dyn PipelineBuilder + Send>)>,
+    pub windows: Vec<(WindowBuilder<N>, Box<dyn PipelineBuilder<N>>)>,
 }
 
 impl<N> EngineBuilder<N>

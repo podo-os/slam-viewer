@@ -18,6 +18,17 @@ where
     pub keyboard_speed: N,
 }
 
+impl Default for CameraControllerConfig<f32> {
+    fn default() -> Self {
+        Self {
+            mouse_left_speed: 1.0,
+            mouse_right_speed: 5.0,
+            scroll_speed: 1.0,
+            keyboard_speed: 0.1,
+        }
+    }
+}
+
 impl<N> Into<CameraController<N>> for CameraControllerConfig<N>
 where
     N: Number,
